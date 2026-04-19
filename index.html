@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONSA InSAR — Pemantauan Deformasi RoW Pipa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #0D2137;
+    --blue:   #0F4C81;
+    --teal:   #0D9E8A;
+    --ice:    #D6E8F5;
+    --white:  #FFFFFF;
+    --off:    #F4F7FA;
+    --gray:   #6B7A8D;
+    --lgray:  #D1D9E0;
+    --c1: #1A9850; --c2: #78C679; --c3: #C2E699;
+    --c4: #FEC44F; --c5: #FE9929; --c6: #F03B20;
+    --c7: #BD0026; --c8: #2C003E;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(13,158,138,.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(15,76,129,.25) 0%, transparent 55%),
+      var(--navy);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 5rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* grid lines background */
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(13,158,138,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(13,158,138,.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(13,158,138,.15);
+    border: 1px solid rgba(13,158,138,.4);
+    border-radius: 999px;
+    padding: .35rem 1rem;
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 1.5rem;
+    animation: fadeUp .6s ease both;
+  }
+  .badge::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--teal);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:.4;transform:scale(1.4)}
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    line-height: 1.1;
+    max-width: 800px;
+    margin-bottom: 1rem;
+    animation: fadeUp .7s .1s ease both;
+  }
+  h1 em { font-style: italic; color: var(--teal); }
+
+  .subtitle {
+    font-size: 1rem;
+    color: rgba(255,255,255,.6);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    animation: fadeUp .7s .2s ease both;
+  }
+
+  .hero-btns {
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp .7s .3s ease both;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .75rem 1.75rem;
+    border-radius: 8px;
+    font-size: .9rem; font-weight: 500;
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+    cursor: pointer; border: none;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .btn-primary { background: var(--teal); color: var(--white); }
+  .btn-outline  { background: transparent; color: var(--white); border: 1px solid rgba(255,255,255,.3); }
+
+  /* scroll arrow */
+  .scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: .4rem;
+    color: rgba(255,255,255,.3); font-size: .7rem; letter-spacing: .1em;
+    animation: fadeUp 1s .8s ease both;
+  }
+  .scroll-hint .arrow {
+    width: 20px; height: 20px; border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    animation: bounce 1.5s infinite;
+  }
+  @keyframes bounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(4px)} }
+
+  /* ── STATS ── */
+  .section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    font-size: .7rem; font-weight: 500; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--teal);
+    margin-bottom: .75rem;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    line-height: 1.2; margin-bottom: 2.5rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+  .stat-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: background .2s, border-color .2s;
+  }
+  .stat-card:hover {
+    background: rgba(13,158,138,.08);
+    border-color: rgba(13,158,138,.3);
+  }
+  .stat-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.4rem; color: var(--white);
+    line-height: 1;
+  }
+  .stat-val span { font-size: 1rem; color: var(--teal); margin-left: .25rem; }
+  .stat-lbl { font-size: .82rem; color: rgba(255,255,255,.5); margin-top: .4rem; line-height: 1.4; }
+
+  /* ── RISK SUMMARY ── */
+  .risk-section {
+    background: rgba(255,255,255,.03);
+    border-top: 1px solid rgba(255,255,255,.07);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    padding: 5rem 2rem;
+  }
+  .risk-inner { max-width: 1100px; margin: 0 auto; }
+
+  .risk-bars { display: flex; flex-direction: column; gap: .85rem; margin-top: 2rem; }
+  .risk-row { display: grid; grid-template-columns: 160px 1fr 70px; align-items: center; gap: 1rem; }
+  .risk-lbl { font-size: .82rem; color: rgba(255,255,255,.7); text-align: right; }
+  .bar-track {
+    height: 10px; background: rgba(255,255,255,.07);
+    border-radius: 999px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 999px;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+  }
+  .risk-km { font-size: .78rem; color: rgba(255,255,255,.45); }
+
+  /* ── METHODOLOGY ── */
+  .method-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  .method-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .method-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem; color: var(--teal); opacity: .5;
+    line-height: 1; margin-bottom: .75rem;
+  }
+  .method-title { font-size: .95rem; font-weight: 500; margin-bottom: .5rem; }
+  .method-body { font-size: .82rem; color: rgba(255,255,255,.5); line-height: 1.6; }
+
+  /* ── MAP SECTION ── */
+  .map-section {
+    padding: 5rem 2rem;
+    max-width: 1100px; margin: 0 auto;
+    text-align: center;
+  }
+  #map-container {
+    width: 100%; height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.1);
+    transition: height .6s cubic-bezier(.4,0,.2,1);
+    background: rgba(0,0,0,.3);
+  }
+  #map-container.open { height: 600px; }
+  #map-container iframe {
+    width: 100%; height: 100%; border: none;
+  }
+  .map-toggle-btn {
+    margin-top: 1.5rem;
+    font-size: .85rem;
+    color: rgba(255,255,255,.4);
+    background: none; border: none;
+    cursor: pointer; text-decoration: underline;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid rgba(255,255,255,.07);
+    padding: 2rem;
+    text-align: center;
+    font-size: .78rem;
+    color: rgba(255,255,255,.25);
+    line-height: 1.8;
+  }
+  footer strong { color: rgba(255,255,255,.5); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="badge">Pertamina Gas · ONSA · KKW 2025</div>
+  <h1>Pemantauan Deformasi Tanah<br><em>Right-of-Way Pipa ONSA</em><br>dengan Teknologi InSAR</h1>
+  <p class="subtitle">
+    Analisis interferometri radar Sentinel-1 sepanjang 334 km koridor pipeline
+    Arun–Belawan menggunakan pendekatan Design Thinking.
+  </p>
+  <div class="hero-btns">
+    <button class="btn btn-primary" onclick="openMap()">🗺️ Buka Peta Interaktif</button>
+    <a href="#ringkasan" class="btn btn-outline">📊 Lihat Ringkasan</a>
+  </div>
+  <div class="scroll-hint"><span>SCROLL</span><div class="arrow"></div></div>
+</section>
+
+<!-- ══════════════ STATS ══════════════ -->
+<div id="ringkasan">
+<div class="section">
+  <p class="section-label reveal">Statistik Proyek</p>
+  <h2 class="section-title reveal">Data & Cakupan Pemantauan</h2>
+  <div class="stats-grid">
+    <div class="stat-card reveal">
+      <div class="stat-val">334<span>km</span></div>
+      <div class="stat-lbl">Panjang total pipeline RoW<br>Arun (Aceh) → Belawan (Medan)</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-val">3,348</div>
+      <div class="stat-lbl">Titik HM marker<br>setiap 100 m sepanjang pipeline</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-val">1,591</div>
+      <div class="stat-lbl">Titik valid terdeteksi<br>47.5% dari total HM</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-val">−454<span>mm</span></div>
+      <div class="stat-lbl">Deformasi maksimum terdeteksi<br>Jan 2024 – Jan 2025</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-val">12</div>
+      <div class="stat-lbl">Bulan baseline temporal<br>citra Sentinel-1A IW SLC</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-val">14<span>m</span></div>
+      <div class="stat-lbl">Resolusi piksel spasial<br>setelah multilooking 4×16</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════ RISK SUMMARY ══════════════ -->
+<section class="risk-section">
+<div class="risk-inner">
+  <p class="section-label reveal">Klasifikasi Risiko</p>
+  <h2 class="section-title reveal">Distribusi Deformasi Sepanjang Pipeline</h2>
+  <p class="reveal" style="color:rgba(255,255,255,.5);font-size:.88rem;margin-bottom:.5rem;">
+    Total panjang teranalisis: 159.1 km dari 334.7 km pipeline (47.5% coverage)
+  </p>
+
+  <div class="risk-bars reveal">
+
+    <div class="risk-row">
+      <div class="risk-lbl">Sangat Stabil</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--c1)" data-w="3.1"></div></div>
+      <div class="risk-km">5.0 km</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-lbl">Stabil</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--c2)" data-w="18.3"></div></div>
+      <div class="risk-km">29.1 km</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-lbl">Perhatian</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--c3)" data-w="7.0"></div></div>
+      <div class="risk-km">11.2 km</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-lbl">Waspada</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--c4)" data-w="11.8"></div></div>
+      <div class="risk-km">18.8 km</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-lbl">Monitor</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--c5)" data-w="10.2"></div></div>
+      <div class="risk-km">16.3 km</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-lbl">Risiko Sedang</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--c6)" data-w="21.9"></div></div>
+      <div class="risk-km">34.9 km</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-lbl">Risiko Tinggi</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--c7)" data-w="25.0"></div></div>
+      <div class="risk-km">39.8 km</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-lbl">Kritis</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--c8)" data-w="2.5"></div></div>
+      <div class="risk-km">4.0 km</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-lbl" style="color:rgba(255,255,255,.35)">No Data</div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%;background:rgba(255,255,255,.15)" data-w="100"></div></div>
+      <div class="risk-km" style="color:rgba(255,255,255,.3)">175.7 km</div>
+    </div>
+
+  </div>
+
+  <p class="reveal" style="color:rgba(255,255,255,.3);font-size:.75rem;margin-top:1.25rem;">
+    Threshold berdasarkan distribusi data aktual. Nilai negatif = subsiden.
+    Periode pengamatan: Januari 2024 – Januari 2025.
+  </p>
+</div>
+</section>
+
+<!-- ══════════════ METHODOLOGY ══════════════ -->
+<div class="section">
+  <p class="section-label reveal">Metodologi</p>
+  <h2 class="section-title reveal">Alur Pemrosesan — Design Thinking</h2>
+  <div class="method-grid">
+    <div class="method-card reveal">
+      <div class="method-num">01</div>
+      <div class="method-title">Empathize — Identifikasi Masalah</div>
+      <div class="method-body">Wawancara dengan tim ONSA, identifikasi keterbatasan pemantauan konvensional di 334 km koridor RoW pipeline gas Arun–Belawan.</div>
+    </div>
+    <div class="method-card reveal">
+      <div class="method-num">02</div>
+      <div class="method-title">Define — Rumusan Masalah</div>
+      <div class="method-body">ONSA membutuhkan metode pemantauan deformasi tanah yang sistematis, menyeluruh, dan berkelanjutan untuk seluruh panjang pipeline.</div>
+    </div>
+    <div class="method-card reveal">
+      <div class="method-num">03</div>
+      <div class="method-title">Ideate — Pemilihan Solusi</div>
+      <div class="method-body">Dipilih DInSAR berbasis Sentinel-1 karena cakupan 250 km, data gratis, resolusi 14 m, dan revisit 12 hari — optimal untuk pemantauan regional.</div>
+    </div>
+    <div class="method-card reveal">
+      <div class="method-num">04</div>
+      <div class="method-title">Prototype — Pengolahan Data</div>
+      <div class="method-body">S1 TOPS Coregistration → Interferogram → Goldstein Filter → SNAPHU Unwrapping → Phase to Displacement → Python extraction & APS correction.</div>
+    </div>
+    <div class="method-card reveal">
+      <div class="method-num">05</div>
+      <div class="method-title">Test — Validasi Hasil</div>
+      <div class="method-body">Validasi menggunakan data NGL (Nevada Geodetic Lab) rata-rata dalam radius 20 km: InSAR −45.9 mm vs literatur −48.6 s.d. +54.1 mm/tahun untuk Sumatera Utara.</div>
+    </div>
+    <div class="method-card reveal">
+      <div class="method-num">06</div>
+      <div class="method-title">Output — Peta Risiko Interaktif</div>
+      <div class="method-body">3,348 titik HM terklasifikasi dalam 8 tingkat risiko, divisualisasikan dalam peta Folium interaktif dan landing page ini sebagai deliverable operasional.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MAP ══════════════ -->
+<section class="map-section">
+  <p class="section-label reveal">Visualisasi</p>
+  <h2 class="section-title reveal">Peta Deformasi Interaktif Pipeline ONSA</h2>
+  <p class="reveal" style="color:rgba(255,255,255,.5);font-size:.88rem;margin-bottom:2rem;">
+    Klik tombol di bawah untuk membuka peta interaktif. Klik titik pada peta untuk melihat detail deformasi per HM marker.
+  </p>
+  <div id="map-container">
+    <iframe id="map-iframe" src="" title="Peta Deformasi ONSA"></iframe>
+  </div>
+  <div style="margin-top:1.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;" class="reveal">
+    <button class="btn btn-primary" onclick="openMap()">🗺️ Tampilkan Peta</button>
+    <button class="btn btn-outline" onclick="closeMap()">✕ Tutup Peta</button>
+    <a href="map.html" target="_blank" class="btn btn-outline">↗ Buka di Tab Baru</a>
+  </div>
+  <button class="map-toggle-btn" onclick="openMap()">
+    Peta belum tampil? Klik di sini untuk memuat
+  </button>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p><strong>Pemantauan Deformasi Tanah RoW Pipa ONSA dengan InSAR</strong></p>
+  <p>PT Pertamina Gas — Operation North Sumatra Area (ONSA)</p>
+  <p>Kerja Keahlian Wajib (KKW) · 2025 · Sentinel-1A · ESA Copernicus</p>
+  <p style="margin-top:.75rem;">
+    Data: ESA Sentinel-1 · Processing: SNAP + Python · Validasi: Nevada Geodetic Laboratory
+  </p>
+</footer>
+
+<script>
+  /* ── Scroll reveal ── */
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  /* ── Animate bars on scroll ── */
+  const barObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.bar-fill').forEach(bar => {
+          bar.style.width = bar.dataset.w + '%';
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.risk-bars').forEach(el => barObserver.observe(el));
+
+  /* ── Map toggle ── */
+  let mapLoaded = false;
+  function openMap() {
+    const container = document.getElementById('map-container');
+    const iframe    = document.getElementById('map-iframe');
+    if (!mapLoaded) {
+      iframe.src = 'map.html';
+      mapLoaded  = true;
+    }
+    container.classList.add('open');
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function closeMap() {
+    document.getElementById('map-container').classList.remove('open');
+  }
+</script>
+</body>
+</html>
